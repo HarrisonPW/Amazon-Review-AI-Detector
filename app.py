@@ -1,20 +1,28 @@
 from flask import Flask, request, jsonify
 from transformers import GPT2Tokenizer, GPT2ForSequenceClassification
 import torch
+import pickle
 
 app = Flask(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# Load GPT-2 model and tokenizer
+gpt2_tokenizer = GPT2Tokenizer.from_pretrained('openai-community/gpt2')
+gpt2_tokenizer.pad_token = gpt2_tokenizer.eos_token
+gpt2_model = GPT2ForSequenceClassification.from_pretrained('openai-community/gpt2', num_labels=2)
+gpt2_model.load_state_dict(torch.load('gpt2_spam_detector.pth'))
+gpt2_model.to(device)
 
-tokenizer = GPT2Tokenizer.from_pretrained('openai-community/gpt2')
-tokenizer.pad_token = tokenizer.eos_token
-model = GPT2ForSequenceClassification.from_pretrained('openai-community/gpt2', num_labels=2)
-model.load_state_dict(torch.load('gpt2_spam_detector.pth'))
-model.to(device)
+# Load MultinomialNB model and CountVectorizer
+with open('multinomialNB_nb_spam_detector.pkl', 'rb') as f:
+    nb_model = pickle.load(f)
+
+with open('multinomialNB_count_vectorizer.pkl', 'rb') as f:
+    nb_vectorizer = pickle.load(f)
 
 
-def predict_spam(review, model, tokenizer, device, max_length=128):
+def predict_spam_gpt2(review, model, tokenizer, device, max_length=128):
     model.eval()
     encoding = tokenizer.encode_plus(
         review,
@@ -37,6 +45,13 @@ def predict_spam(review, model, tokenizer, device, max_length=128):
     return "Spam" if prediction.item() == 1 else "Not Spam"
 
 
+# MultinomialNB Model
+def predict_spam_nb(review, model, vectorizer):
+    review_vectorized = vectorizer.transform([review])
+    prediction = model.predict(review_vectorized)
+    return "Spam" if prediction[0] == 1 else "Not Spam"
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
@@ -44,7 +59,9 @@ def predict():
         return jsonify({"error": "No review provided"}), 400
 
     review = data['review']
-    result = predict_spam(review, model, tokenizer, device)
+    result = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
+    result = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
+
     return jsonify({"review": review, "prediction": result})
 
 
