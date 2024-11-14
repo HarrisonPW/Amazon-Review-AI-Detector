@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 from transformers import GPT2Tokenizer, GPT2ForSequenceClassification
 import torch
 import pickle
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -59,10 +61,26 @@ def predict():
         return jsonify({"error": "No review provided"}), 400
 
     review = data['review']
-    result = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
-    result = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
+    result_gpt2 = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
+    result_nb = predict_spam_nb(review, nb_model, nb_vectorizer)
+    result_nb2 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
+    result_nb3 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
+    result_nb4 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
 
-    return jsonify({"review": review, "prediction": result})
+    # Calculate the percentage of spam predictions
+    spam_predictions = [result_gpt2, result_nb, result_nb2, result_nb3, result_nb4]
+    spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
+    spam_percentage = (spam_count / len(spam_predictions)) * 100
+
+    return jsonify({
+        "review": review,
+        "result_gpt2": result_gpt2,
+        "result_nb": result_nb,
+        "result_nb2": result_nb2,
+        "result_nb3": result_nb3,
+        "result_nb4": result_nb4,
+        "spam_percentage": spam_percentage
+    })
 
 
 if __name__ == "__main__":

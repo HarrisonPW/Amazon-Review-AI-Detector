@@ -3,4 +3,5 @@ transformers
 torch
 requests
 pymongo
+flask_cors
 scikit-learn
