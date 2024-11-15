@@ -13,6 +13,8 @@ To run the frontend, go to the folder `amazon-spam-detector-frontend`.
 
 ### 2. Run on Docker
 
+Ensure Docker Desktop is Running. 
+
 Run the following command:
 
 ```bash
