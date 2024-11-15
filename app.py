@@ -63,7 +63,20 @@ def predict_with_gemini_api(review):
 
     try:
         model = genai.GenerativeModel(model_id)
-        response = model.generate_content(review) 
+        response = model.generate_content(review, safety_settings=[
+        {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_NONE",
+        },
+        {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_NONE",
+        },
+        {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_NONE",
+        }
+    ]) 
         prediction = response.text
         return "Spam" if prediction == 1 else "Not Spam"
     except requests.RequestException as e:
