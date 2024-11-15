@@ -97,4 +97,3 @@ Open your browser and go to the local address shown in the output (usually `http
 - **tsconfig.json**: TypeScript configuration file, which defines the TypeScript compilation options.
 - **eslint.config.js**: ESLint configuration file, used for code style and quality checking.
 
-If you encounter any errors or need further assistance, feel free to ask!
