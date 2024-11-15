@@ -3,6 +3,9 @@ from transformers import GPT2Tokenizer, GPT2ForSequenceClassification
 import torch
 import pickle
 from flask_cors import CORS
+import requests
+import google.generativeai as genai
+
 
 app = Flask(__name__)
 CORS(app)
@@ -53,6 +56,20 @@ def predict_spam_nb(review, model, vectorizer):
     prediction = model.predict(review_vectorized)
     return "Spam" if prediction[0] == 1 else "Not Spam"
 
+# Gemini Model API
+def predict_with_gemini_api(review):
+    model_id = "tunedModels/reviewclassifier-g8uk4no67udl"  
+    genai.configure(api_key="AIzaSyBnhosxPFjzV6Vthnr9krUEJPqe8K5-cHo")
+
+    try:
+        model = genai.GenerativeModel(model_id)
+        response = model.generate_content(review) 
+        prediction = response.text
+        return "Spam" if prediction == 1 else "Not Spam"
+    except requests.RequestException as e:
+        print(f"Error calling Gemini API: {e}")
+        return "Error"
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -63,12 +80,12 @@ def predict():
     review = data['review']
     result_gpt2 = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
     result_nb = predict_spam_nb(review, nb_model, nb_vectorizer)
-    result_nb2 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
+    result_gemini = predict_with_gemini_api(review)
     result_nb3 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
     result_nb4 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
 
     # Calculate the percentage of spam predictions
-    spam_predictions = [result_gpt2, result_nb, result_nb2, result_nb3, result_nb4]
+    spam_predictions = [result_gpt2, result_nb, result_gemini, result_nb3, result_nb4]
     spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
     spam_percentage = (spam_count / len(spam_predictions)) * 100
 
@@ -76,7 +93,7 @@ def predict():
         "review": review,
         "result_gpt2": result_gpt2,
         "result_nb": result_nb,
-        "result_nb2": result_nb2,
+        "result_gemini": result_gemini,
         "result_nb3": result_nb3,
         "result_nb4": result_nb4,
         "spam_percentage": spam_percentage
