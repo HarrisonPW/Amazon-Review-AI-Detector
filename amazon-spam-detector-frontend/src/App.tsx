@@ -8,7 +8,7 @@ interface Results {
     review: string;
     result_gpt2: string;
     result_nb: string;
-    result_nb2: string;
+    result_gemini: string;
     result_nb3: string;
     result_nb4: string;
     spam_percentage: number;
