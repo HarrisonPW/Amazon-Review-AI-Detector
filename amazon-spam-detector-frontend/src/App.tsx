@@ -20,7 +20,7 @@ function App() {
 
     const handleSubmit = async () => {
         try {
-            const response = await axios.post("http://localhost:88/predict", {review});
+            const response = await axios.post("http://localhost:5000/predict", {review});
             setResults(response.data);
         } catch (error) {
             console.error("Error fetching data:", error);
