@@ -21,10 +21,10 @@ gpt2_model.to(device)
 
 # Load LogisticRegression model and CountVectorizer
 with open('logistic_regression_logistic_spam_detector.pkl', 'rb') as f:
-    nb_model = pickle.load(f)
+    lr_model = pickle.load(f)
 
 with open('logistic_regression_count_vectorizer.pkl', 'rb') as f:
-    nb_vectorizer = pickle.load(f)
+    lr_vectorizer = pickle.load(f)
 
 
 def predict_spam_gpt2(review, model, tokenizer, device, max_length=128):
@@ -92,10 +92,10 @@ def predict():
 
     review = data['review']
     result_gpt2 = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
-    result_lr = predict_spam_lr(review, nb_model, nb_vectorizer)
+    result_lr = predict_spam_lr(review, lr_model, lr_vectorizer)
     result_gemini = predict_with_gemini_api(review)
-    result_nb3 = predict_spam_lr(review, nb_model, nb_vectorizer)  # TODO
-    result_nb4 = predict_spam_lr(review, nb_model, nb_vectorizer)  # TODO
+    result_nb3 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
+    result_nb4 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
 
     # Calculate the percentage of spam predictions
     spam_predictions = [result_gpt2, result_lr, result_gemini, result_nb3, result_nb4]
