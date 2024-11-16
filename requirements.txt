@@ -6,4 +6,5 @@ pymongo
 flask_cors
 scikit-learn
 google-generativeai
-
+joblib
+nltk
