@@ -9,12 +9,74 @@ import joblib
 import re
 import nltk
 
+from transformers import AutoTokenizer
+import torch
+from transformers import BertModel
+import torch.nn.functional as F
+from safetensors.torch import load_file
+
+
+
+
+
 nltk.download('stopwords')
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 
 app = Flask(__name__)
 CORS(app)
+
+
+class BertLSTMClassifier(torch.nn.Module):
+    def __init__(self, model_name, num_labels=2, hidden_size=768, lstm_hidden_size=256, num_lstm_layers=1):
+        super(BertLSTMClassifier, self).__init__()
+        self.num_labels = num_labels
+        self.bert = BertModel.from_pretrained(model_name)
+        self.lstm = torch.nn.LSTM(input_size=hidden_size,hidden_size=lstm_hidden_size,num_layers=num_lstm_layers,batch_first=True,bidirectional=False)
+        self.classifier = torch.nn.Linear(lstm_hidden_size, num_labels)
+
+    def forward(self, input_ids, attention_mask=None):
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        sequence_output = outputs.last_hidden_state
+        lstm_output, _ = self.lstm(sequence_output)
+        lstm_output = lstm_output[:, -1, :]
+        logits = self.classifier(lstm_output)
+        return logits
+
+model_dir = './'
+tokenizer = AutoTokenizer.from_pretrained(model_dir)
+BERTmodel = BertLSTMClassifier(model_name='bert-base-uncased', num_labels=2)
+BERTmodel_state_dict = load_file(f'{model_dir}BERTLSTM.safetensors')
+BERTmodel.load_state_dict(BERTmodel_state_dict)
+BERTmodel.eval()
+
+
+BERTmodel_state_dict = load_file(f'{model_dir}BERTLSTM.safetensors')
+BERTmodel.load_state_dict(BERTmodel_state_dict)
+BERTmodel.eval()
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+BERTmodel.to(device)
+
+# BERT prediction
+def predict_with_BERTLSTM(text):
+    encoding = tokenizer(
+        text,
+        truncation=True,
+        max_length=256,
+        padding='max_length',
+        return_tensors='pt',
+    )
+    input_ids = encoding['input_ids'].to(device)
+    attention_mask = encoding['attention_mask'].to(device)
+
+    with torch.no_grad():
+        logits = BERTmodel(input_ids=input_ids, attention_mask=attention_mask)
+        probabilities = F.softmax(logits, dim=1)
+        predicted_class = torch.argmax(probabilities, dim=1).item()
+    return predicted_class, probabilities.cpu().numpy()
+
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -123,6 +185,8 @@ def predict():
     result_gpt2 = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
     result_lr = predict_spam_lr(review, lr_model, lr_vectorizer)
     result_gemini = predict_with_gemini_api(review)
+    result_nb3 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
+    result_nb4 = predict_with_BERTLSTM(review)  # wenhao wang
     result_mnb = predict_multinomialNB(review)
     result_nb4 = predict_spam_lr(review, nb_model, nb_vectorizer)  # TODO
 
