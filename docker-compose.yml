@@ -28,7 +28,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "5000:5000"
+      - "88:5000"
     command: sh -c "python reassembler.py && python app.py"
 
 volumes:
