@@ -7,7 +7,7 @@ import "./App.css";
 interface Results {
     review: string;
     result_gpt2: string;
-    result_nb: string;
+    result_lr: string;
     result_gemini: string;
     result_nb3: string;
     result_nb4: string;
