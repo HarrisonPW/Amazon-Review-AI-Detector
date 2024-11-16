@@ -9,7 +9,7 @@ interface Results {
     result_gpt2: string;
     result_lr: string;
     result_gemini: string;
-    result_nb3: string;
+    result_mnb: string;
     result_nb4: string;
     spam_percentage: number;
 }
