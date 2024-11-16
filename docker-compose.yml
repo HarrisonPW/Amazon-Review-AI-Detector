@@ -1,4 +1,3 @@
-
 version: '3.8'
 
 services:
@@ -16,8 +15,7 @@ services:
     container_name: json_handler_container
     volumes:
       - .:/app
-    command: sh -c "python json_reassembler.py && python data_handler.py"
-
+#    command: sh -c "python json_reassembler.py && python data_handler.py"
   flask-app:
     build:
       context: .
@@ -29,7 +27,7 @@ services:
       - .:/app
     ports:
       - "88:5000"
-    command: sh -c "python reassembler.py && python app.py"
+    command: sh -c "python reassembler.py && python reassembler_BERT.py && python app.py"
 
 volumes:
   mongo_data:

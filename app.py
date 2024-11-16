@@ -1,27 +1,18 @@
-from flask import Flask, request, jsonify
-from transformers import GPT2Tokenizer, GPT2ForSequenceClassification
-import torch
 import pickle
-from flask_cors import CORS
-import requests
+import re
+
 import google.generativeai as genai
 import joblib
-import re
-import nltk
-
-from transformers import AutoTokenizer
+import requests
 import torch
-from transformers import BertModel
 import torch.nn.functional as F
-from safetensors.torch import load_file
-
-
-
-
-
-nltk.download('stopwords')
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from nltk.stem.porter import PorterStemmer
-from nltk.corpus import stopwords
+from safetensors.torch import load_file
+from transformers import AutoTokenizer
+from transformers import BertModel
+from transformers import GPT2Tokenizer, GPT2ForSequenceClassification
 
 app = Flask(__name__)
 CORS(app)
@@ -32,7 +23,8 @@ class BertLSTMClassifier(torch.nn.Module):
         super(BertLSTMClassifier, self).__init__()
         self.num_labels = num_labels
         self.bert = BertModel.from_pretrained(model_name)
-        self.lstm = torch.nn.LSTM(input_size=hidden_size,hidden_size=lstm_hidden_size,num_layers=num_lstm_layers,batch_first=True,bidirectional=False)
+        self.lstm = torch.nn.LSTM(input_size=hidden_size, hidden_size=lstm_hidden_size, num_layers=num_lstm_layers,
+                                  batch_first=True, bidirectional=False)
         self.classifier = torch.nn.Linear(lstm_hidden_size, num_labels)
 
     def forward(self, input_ids, attention_mask=None):
@@ -43,6 +35,7 @@ class BertLSTMClassifier(torch.nn.Module):
         logits = self.classifier(lstm_output)
         return logits
 
+
 model_dir = './'
 tokenizer = AutoTokenizer.from_pretrained(model_dir)
 BERTmodel = BertLSTMClassifier(model_name='bert-base-uncased', num_labels=2)
@@ -50,13 +43,13 @@ BERTmodel_state_dict = load_file(f'{model_dir}BERTLSTM.safetensors')
 BERTmodel.load_state_dict(BERTmodel_state_dict)
 BERTmodel.eval()
 
-
 BERTmodel_state_dict = load_file(f'{model_dir}BERTLSTM.safetensors')
 BERTmodel.load_state_dict(BERTmodel_state_dict)
 BERTmodel.eval()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BERTmodel.to(device)
+
 
 # BERT prediction
 def predict_with_BERTLSTM(text):
@@ -74,9 +67,7 @@ def predict_with_BERTLSTM(text):
         logits = BERTmodel(input_ids=input_ids, attention_mask=attention_mask)
         probabilities = F.softmax(logits, dim=1)
         predicted_class = torch.argmax(probabilities, dim=1).item()
-    return predicted_class, probabilities.cpu().numpy()
-
-
+    return "Spam" if predicted_class == 1 else "Not Spam", probabilities.cpu().numpy()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -106,7 +97,7 @@ def predict_multinomialNB(review):
     review = re.sub('[^a-zA-Z]', ' ', review)
     review = review.lower()
     list = review.split()
-    review = [ps.stem(word) for word in list if word not in set(stopwords.words('english'))]
+    review = [ps.stem(word) for word in list]
     sentences = ' '.join(review)
     corpus.append(sentences)
 
@@ -115,7 +106,6 @@ def predict_multinomialNB(review):
     result = mnb.predict(x)
 
     return "Spam" if result[0] == 1 else "Not Spam"
-
 
 
 def predict_spam_gpt2(review, model, tokenizer, device, max_length=128):
@@ -147,6 +137,7 @@ def predict_spam_lr(review, model, vectorizer):
     prediction = model.predict(review_vectorized)
     return "Spam" if prediction[0] == 1 else "Not Spam"
 
+
 # Gemini Model API
 def predict_with_gemini_api(review):
     model_id = "tunedModels/reviewclassifier-g8uk4no67udl"
@@ -155,19 +146,19 @@ def predict_with_gemini_api(review):
     try:
         model = genai.GenerativeModel(model_id)
         response = model.generate_content(review, safety_settings=[
-        {
-            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            "threshold": "BLOCK_NONE",
-        },
-        {
-            "category": "HARM_CATEGORY_HATE_SPEECH",
-            "threshold": "BLOCK_NONE",
-        },
-        {
-            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-            "threshold": "BLOCK_NONE",
-        }
-    ])
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_NONE",
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_NONE",
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE",
+            }
+        ])
         prediction = response.text
         return "Spam" if prediction == 1 else "Not Spam"
     except requests.RequestException as e:
@@ -185,13 +176,11 @@ def predict():
     result_gpt2 = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
     result_lr = predict_spam_lr(review, lr_model, lr_vectorizer)
     result_gemini = predict_with_gemini_api(review)
-    result_nb3 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
-    result_nb4 = predict_with_BERTLSTM(review)  # wenhao wang
     result_mnb = predict_multinomialNB(review)
-    result_nb4 = predict_spam_lr(review, nb_model, nb_vectorizer)  # TODO
+    result_BERTLSTM, probabilities = predict_with_BERTLSTM(review)
 
     # Calculate the percentage of spam predictions
-    spam_predictions = [result_gpt2, result_lr, result_gemini, result_mnb, result_nb4]
+    spam_predictions = [result_gpt2, result_lr, result_gemini, result_mnb, result_BERTLSTM]
     spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
     spam_percentage = (spam_count / len(spam_predictions)) * 100
 
@@ -201,7 +190,7 @@ def predict():
         "result_lr": result_lr,
         "result_gemini": result_gemini,
         "result_mnb": result_mnb,
-        "result_nb4": result_nb4,
+        "result_BERTLSTM": result_BERTLSTM,
         "spam_percentage": spam_percentage
     })
 
