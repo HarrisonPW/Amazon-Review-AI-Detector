@@ -5,7 +5,12 @@ import pickle
 from flask_cors import CORS
 import requests
 import google.generativeai as genai
-
+import joblib
+import re
+import nltk
+nltk.download('stopwords')
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +30,28 @@ with open('logistic_regression_logistic_spam_detector.pkl', 'rb') as f:
 
 with open('logistic_regression_count_vectorizer.pkl', 'rb') as f:
     lr_vectorizer = pickle.load(f)
+
+# load multinomialNB model and predict the spam by input review text
+def predict_multinomialNB(review):
+    cv = joblib.load('training_models/MultinomialNaiveBayes/cv.pkl')
+    mnb = joblib.load('training_models/MultinomialNaiveBayes/MultinomialNB.pkl')
+    ps = PorterStemmer() # initializing porter stemmer
+
+    corpus=[]
+    sentences=[]
+    review=re.sub('[^a-zA-Z]',' ', review)
+    review=review.lower()
+    list=review.split()
+    review=[ps.stem(word) for word in list if word not in set(stopwords.words('english'))]
+    sentences=' '.join(review)
+    corpus.append(sentences)
+
+    x = cv.transform(corpus).toarray()
+
+    result = mnb.predict(x)
+
+    return "Spam" if result[0] == 1 else "Not Spam"
+
 
 
 def predict_spam_gpt2(review, model, tokenizer, device, max_length=128):
@@ -97,6 +124,9 @@ def predict():
     result_nb3 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
     result_nb4 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
 
+    # zilu added:
+    result_mnb = predict_multinomialNB(review)
+
     # Calculate the percentage of spam predictions
     spam_predictions = [result_gpt2, result_lr, result_gemini, result_nb3, result_nb4]
     spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
@@ -109,7 +139,8 @@ def predict():
         "result_gemini": result_gemini,
         "result_nb3": result_nb3,
         "result_nb4": result_nb4,
-        "spam_percentage": spam_percentage
+        "spam_percentage": spam_percentage,
+        "multinomialNB": result_mnb
     })
 
 
