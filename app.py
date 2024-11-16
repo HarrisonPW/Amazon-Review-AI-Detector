@@ -19,11 +19,11 @@ gpt2_model = GPT2ForSequenceClassification.from_pretrained('openai-community/gpt
 gpt2_model.load_state_dict(torch.load('gpt2_spam_detector.pth'))
 gpt2_model.to(device)
 
-# Load MultinomialNB model and CountVectorizer
-with open('multinomialNB_nb_spam_detector.pkl', 'rb') as f:
+# Load LogisticRegression model and CountVectorizer
+with open('logistic_regression_logistic_spam_detector.pkl', 'rb') as f:
     nb_model = pickle.load(f)
 
-with open('multinomialNB_count_vectorizer.pkl', 'rb') as f:
+with open('logistic_regression_count_vectorizer.pkl', 'rb') as f:
     nb_vectorizer = pickle.load(f)
 
 
@@ -50,15 +50,15 @@ def predict_spam_gpt2(review, model, tokenizer, device, max_length=128):
     return "Spam" if prediction.item() == 1 else "Not Spam"
 
 
-# MultinomialNB Model
-def predict_spam_nb(review, model, vectorizer):
+# LogisticRegression Model
+def predict_spam_lr(review, model, vectorizer):
     review_vectorized = vectorizer.transform([review])
     prediction = model.predict(review_vectorized)
     return "Spam" if prediction[0] == 1 else "Not Spam"
 
 # Gemini Model API
 def predict_with_gemini_api(review):
-    model_id = "tunedModels/reviewclassifier-g8uk4no67udl"  
+    model_id = "tunedModels/reviewclassifier-g8uk4no67udl"
     genai.configure(api_key="AIzaSyBnhosxPFjzV6Vthnr9krUEJPqe8K5-cHo")
 
     try:
@@ -76,7 +76,7 @@ def predict_with_gemini_api(review):
             "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
             "threshold": "BLOCK_NONE",
         }
-    ]) 
+    ])
         prediction = response.text
         return "Spam" if prediction == 1 else "Not Spam"
     except requests.RequestException as e:
@@ -92,20 +92,20 @@ def predict():
 
     review = data['review']
     result_gpt2 = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
-    result_nb = predict_spam_nb(review, nb_model, nb_vectorizer)
+    result_lr = predict_spam_lr(review, nb_model, nb_vectorizer)
     result_gemini = predict_with_gemini_api(review)
-    result_nb3 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
-    result_nb4 = predict_spam_nb(review, nb_model, nb_vectorizer)  # TODO
+    result_nb3 = predict_spam_lr(review, nb_model, nb_vectorizer)  # TODO
+    result_nb4 = predict_spam_lr(review, nb_model, nb_vectorizer)  # TODO
 
     # Calculate the percentage of spam predictions
-    spam_predictions = [result_gpt2, result_nb, result_gemini, result_nb3, result_nb4]
+    spam_predictions = [result_gpt2, result_lr, result_gemini, result_nb3, result_nb4]
     spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
     spam_percentage = (spam_count / len(spam_predictions)) * 100
 
     return jsonify({
         "review": review,
         "result_gpt2": result_gpt2,
-        "result_nb": result_nb,
+        "result_lr": result_lr,
         "result_gemini": result_gemini,
         "result_nb3": result_nb3,
         "result_nb4": result_nb4,

@@ -7,7 +7,7 @@ import "./App.css";
 interface Results {
     review: string;
     result_gpt2: string;
-    result_nb: string;
+    result_lr: string;
     result_gemini: string;
     result_nb3: string;
     result_nb4: string;
@@ -20,7 +20,7 @@ function App() {
 
     const handleSubmit = async () => {
         try {
-            const response = await axios.post("http://localhost:5000/predict", {review});
+            const response = await axios.post("http://localhost:88/predict", {review});
             setResults(response.data);
         } catch (error) {
             console.error("Error fetching data:", error);
