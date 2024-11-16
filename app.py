@@ -8,6 +8,7 @@ import google.generativeai as genai
 import joblib
 import re
 import nltk
+
 nltk.download('stopwords')
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
