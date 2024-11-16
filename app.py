@@ -31,19 +31,20 @@ with open('logistic_regression_logistic_spam_detector.pkl', 'rb') as f:
 with open('logistic_regression_count_vectorizer.pkl', 'rb') as f:
     lr_vectorizer = pickle.load(f)
 
+
 # load multinomialNB model and predict the spam by input review text
 def predict_multinomialNB(review):
     cv = joblib.load('training_models/MultinomialNaiveBayes/cv.pkl')
     mnb = joblib.load('training_models/MultinomialNaiveBayes/MultinomialNB.pkl')
-    ps = PorterStemmer() # initializing porter stemmer
+    ps = PorterStemmer()
 
-    corpus=[]
-    sentences=[]
-    review=re.sub('[^a-zA-Z]',' ', review)
-    review=review.lower()
-    list=review.split()
-    review=[ps.stem(word) for word in list if word not in set(stopwords.words('english'))]
-    sentences=' '.join(review)
+    corpus = []
+    sentences = []
+    review = re.sub('[^a-zA-Z]', ' ', review)
+    review = review.lower()
+    list = review.split()
+    review = [ps.stem(word) for word in list if word not in set(stopwords.words('english'))]
+    sentences = ' '.join(review)
     corpus.append(sentences)
 
     x = cv.transform(corpus).toarray()
@@ -121,14 +122,11 @@ def predict():
     result_gpt2 = predict_spam_gpt2(review, gpt2_model, gpt2_tokenizer, device)
     result_lr = predict_spam_lr(review, lr_model, lr_vectorizer)
     result_gemini = predict_with_gemini_api(review)
-    result_nb3 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
-    result_nb4 = predict_spam_lr(review, lr_model, lr_vectorizer)  # TODO
-
-    # zilu added:
     result_mnb = predict_multinomialNB(review)
+    result_nb4 = predict_spam_lr(review, nb_model, nb_vectorizer)  # TODO
 
     # Calculate the percentage of spam predictions
-    spam_predictions = [result_gpt2, result_lr, result_gemini, result_nb3, result_nb4]
+    spam_predictions = [result_gpt2, result_lr, result_gemini, result_mnb, result_nb4]
     spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
     spam_percentage = (spam_count / len(spam_predictions)) * 100
 
@@ -137,10 +135,9 @@ def predict():
         "result_gpt2": result_gpt2,
         "result_lr": result_lr,
         "result_gemini": result_gemini,
-        "result_nb3": result_nb3,
+        "result_mnb": result_mnb,
         "result_nb4": result_nb4,
-        "spam_percentage": spam_percentage,
-        "multinomialNB": result_mnb
+        "spam_percentage": spam_percentage
     })
 
 
