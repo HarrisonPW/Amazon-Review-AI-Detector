@@ -1,5 +1,8 @@
+import os
 import pickle
 import re
+import json
+from datetime import datetime
 
 import google.generativeai as genai
 import joblib
@@ -8,10 +11,10 @@ import torch
 import torch.nn.functional as F
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from confluent_kafka import Producer
 from nltk.stem.porter import PorterStemmer
 from safetensors.torch import load_file
-from transformers import AutoTokenizer
-from transformers import BertModel
+from transformers import AutoTokenizer, BertModel
 from transformers import GPT2Tokenizer, GPT2ForSequenceClassification
 
 app = Flask(__name__)
@@ -68,6 +71,7 @@ def predict_with_BERTLSTM(text):
         probabilities = F.softmax(logits, dim=1)
         predicted_class = torch.argmax(probabilities, dim=1).item()
     return "Spam" if predicted_class == 1 else "Not Spam", probabilities.cpu().numpy()
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -166,6 +170,58 @@ def predict_with_gemini_api(review):
         return "Error"
 
 
+
+# Kafka Configuration
+conf = {
+    'bootstrap.servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:29092'),
+    'client.id': 'spam_detection_producer',
+    'enable.idempotence': True,
+    'acks': 'all',
+    'retries': 5,
+    'max.in.flight.requests.per.connection': 1
+}
+
+producer = Producer(conf)
+
+
+def delivery_report(err, msg):
+    """Callback for message delivery"""
+    if err is not None:
+        print(f'Message delivery failed: {err}')
+    else:
+        print(f'Message delivered to {msg.topic()} [{msg.partition()}]')
+
+
+def create_topic():
+    from confluent_kafka.admin import AdminClient, NewTopic
+    admin_client = AdminClient({'bootstrap.servers': 'localhost:9092'})
+    topic = NewTopic(
+        "spam_detection_topic",
+        num_partitions=1,
+        replication_factor=1
+    )
+    try:
+        admin_client.create_topics([topic])
+        print("Topic created successfully")
+    except Exception as e:
+        print(f"Topic creation failed or already exists: {e}")
+
+
+def send_to_kafka(review_text, spam_percentage):
+    message = {
+        'review': review_text,
+        'is_spam': 1 if spam_percentage > 50 else 0,
+        'spam_percentage': spam_percentage,
+        'timestamp': datetime.utcnow().isoformat()
+    }
+    message_bytes = json.dumps(message).encode('utf-8')
+    producer.produce('spam_detection_topic',
+                     value=message_bytes,
+                     callback=delivery_report)
+    producer.poll(0)
+    producer.flush(10)
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
@@ -184,6 +240,12 @@ def predict():
     spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
     spam_percentage = (spam_count / len(spam_predictions)) * 100
 
+    try:
+        send_to_kafka(review, spam_percentage)
+    except Exception as e:
+        print(f"Error sending to Kafka: {e}")
+        return jsonify({"error": "Error processing review"}), 500
+
     return jsonify({
         "review": review,
         "result_gpt2": result_gpt2,
@@ -191,9 +253,23 @@ def predict():
         "result_gemini": result_gemini,
         "result_mnb": result_mnb,
         "result_BERTLSTM": result_BERTLSTM,
-        "spam_percentage": spam_percentage
+        "spam_percentage": spam_percentage,
+        "is_spam": 1 if spam_percentage > 50 else 0
     })
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    try:
+        create_topic()
+        test_message = json.dumps({'test': 'connection'}).encode('utf-8')
+        producer.produce('spam_detection_topic',
+                         value=test_message,
+                         callback=delivery_report)
+        producer.flush()
+        print("Successfully connected to Kafka")
+
+        app.run(host='0.0.0.0', port=5000)
+    except Exception as e:
+        print(f"Error starting the application: {e}")
+    finally:
+        producer.flush()

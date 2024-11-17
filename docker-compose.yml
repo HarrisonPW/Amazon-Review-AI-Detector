@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
   mongodb:
     image: mongo:latest
     container_name: mongodb_container
@@ -13,21 +38,36 @@ services:
     build:
       context: .
     container_name: json_handler_container
+    depends_on:
+      - kafka
+      - mongodb
     volumes:
       - .:/app
-#    command: sh -c "python json_reassembler.py && python data_handler.py"
+    #    command: sh -c "python data_handler.py"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MONGODB_URI: mongodb://mongodb_container:27017/
+
   flask-app:
     build:
       context: .
     container_name: flask_app_container
     depends_on:
       - mongodb
+      - kafka
       - json-handler
     volumes:
       - .:/app
     ports:
       - "88:5000"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MONGODB_URI: mongodb://mongodb_container:27017/
     command: sh -c "python reassembler.py && python reassembler_BERT.py && python app.py"
 
 volumes:
   mongo_data:
+
+networks:
+  default:
+    name: spam_detection_network

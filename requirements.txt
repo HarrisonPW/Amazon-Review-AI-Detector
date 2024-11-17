@@ -8,3 +8,5 @@ scikit-learn
 google-generativeai
 joblib
 nltk
+confluent_kafka
+safetensors

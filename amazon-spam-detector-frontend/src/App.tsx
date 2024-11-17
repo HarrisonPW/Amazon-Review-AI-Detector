@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 import axios from "axios";
 import ReviewInput from "./components/ReviewInput";
 import ResultsDisplay from "./components/ResultsDisplay";
@@ -22,7 +22,7 @@ function App() {
     const handleSubmit = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.post("http://localhost:88/predict", {review});
+            const response = await axios.post("http://localhost:88/predict", { review });
             setResults(response.data);
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -42,10 +42,10 @@ function App() {
             />
             {isLoading ? (
                 <div className="flex flex-col items-center mt-8">
-                    <div className="spinner"/>
+                    <div className="spinner" />
                     <p className="text-gray-600 mt-2">Analyzing review...</p>
                 </div>
-            ) : results && <ResultsDisplay results={results}/>}
+            ) : results && <ResultsDisplay results={results} />}
         </div>
     );
 }
