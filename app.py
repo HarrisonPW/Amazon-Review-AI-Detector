@@ -179,10 +179,13 @@ def predict():
     result_mnb = predict_multinomialNB(review)
     result_BERTLSTM, probabilities = predict_with_BERTLSTM(review)
 
-    # Calculate the percentage of spam predictions
-    spam_predictions = [result_gpt2, result_lr, result_gemini, result_mnb, result_BERTLSTM]
-    spam_count = sum([1 for prediction in spam_predictions if prediction == "Spam"])
-    spam_percentage = (spam_count / len(spam_predictions)) * 100
+    model_weights = [0.13163362, 0.03004980, 0.33150028, 0.49681624, 0.04000007]
+    model_results = [result_gpt2, result_lr, result_gemini, result_mnb, result_BERTLSTM]
+
+    spam_score = sum(
+        weight for result, weight in zip(model_results, model_weights) if result == "Spam"
+    )
+    spam_percentage = spam_score * 100
 
     return jsonify({
         "review": review,
@@ -193,6 +196,7 @@ def predict():
         "result_BERTLSTM": result_BERTLSTM,
         "spam_percentage": spam_percentage
     })
+
 
 
 if __name__ == "__main__":
