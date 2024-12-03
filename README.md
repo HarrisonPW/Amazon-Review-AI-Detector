@@ -24,6 +24,38 @@
    - Description: Library for creating static, animated, and interactive visualizations.
    - Language: Python.
 
+6. **[NumPy](https://numpy.org/)**
+Description: Fundamental package for numerical computation in Python, providing support for arrays and matrices.
+Language: Python.
+
+7. **[Seaborn](https://seaborn.pydata.org/)**
+Description: Statistical data visualization library based on Matplotlib.
+Language: Python.
+
+8. **[PyTorch](https://pytorch.org/)**
+Description: Deep learning framework providing tensor computation and automatic differentiation.
+Language: Python.
+
+9. **[NLTK (Natural Language Toolkit)](https://www.nltk.org/)**
+Description: Library for processing and analyzing human language data (natural language processing).
+Language: Python.
+
+10. **[TQDM](https://tqdm.github.io/)**
+Description: Library for creating progress bars in Python.
+Language: Python.
+
+11. **[Logging](https://docs.python.org/3/library/logging.html)**
+Description: Built-in Python library for generating log messages.
+Language: Python.
+
+12. **[JSON](https://docs.python.org/3/library/json.html)**
+Description: Built-in Python module for parsing and creating JSON data.
+Language: Python.
+
+13. **[Time](https://docs.python.org/3/library/time.html)**
+Description: Built-in Python module for handling time-related functions.
+Language: Python.
+
 ---
 
 ## Datasets
@@ -107,16 +139,50 @@ GPT-2 is suitable for tasks requiring a high degree of text understanding or tas
 
 ---
 
+### **[Gemini 1.5 API Model](https://ai.google.dev/gemini-api/docs/model-tuning)**  
+
+**Overview**:  
+The **Gemini 1.5 API** is a cutting-edge large language model (LLM) optimized for a wide range of natural language processing tasks. In this project, it was fine-tuned to classify Amazon reviews, leveraging its advanced semantic understanding and text classification capabilities.  
+
+**Key Features**:  
+- **Pre-trained for Versatility**: Gemini 1.5 comes pre-trained on extensive datasets, making it adaptable for tasks such as classification, summarization, and sentiment analysis.  
+- **High Accuracy in Text Understanding**: Its ability to process complex language patterns contributes to robust classification results.  
+- **Cloud-based Scalability**: As an API, it supports seamless integration and scales effortlessly for production environments.  
+
+**Training Details**:  
+- **Sample Size**: 100,000 samples in total. 80,000 samples in the training dataset. 20,000 samples in the testing dataset.
+- **Input**: TextReview (removing stopwords)
+- **Output**: Class (0 or 1)
+- **Dataset Split**: 80% training, 20% testing.  
+- **Fine-tuning Parameters**:  
+  - Optimized using Optuna.
+  - **Epochs**: Set to the maximum (2) under the constraint of Google AI Studio.  
+  - **Batch Size**: Tuned for resource efficiency.  
+  - **Learning Rate**: Adjusted to minimize overfitting and maximize generalization.  
+- **Metrics Evaluated**:  
+  - Accuracy, Precision, Recall, F1 Score, and confusion matrix.  
+  - Reduction in cross-entropy loss (<= 1) achieved during training.  
+
+**Advanced Features**:  
+- **Transformer and MoE Architecture**: Incorporates self-attention and positional encodings for understanding text at both a local and global level.  
+- **API-Driven Deployment**: Accessible via a secure, scalable API endpoint, enabling real-time inference for review classification tasks.  
+- **Real-Time Integration**: Integrated with other models in the system for collaborative inference, enhancing overall system accuracy.  
+
+**Use Case**:  
+Gemini 1.5 API is ideal for applications requiring a balance between high accuracy and deployment scalability, such as real-time content moderation, sentiment analysis, and review authenticity verification.  
+
+---
+
 ### Model Comparison
 
-| Feature                | Logistic Regression                        | GPT-2                                   |
-|------------------------|--------------------------------------------|-----------------------------------------|
-| **Complexity**         | Low                                       | High                                    |
-| **Training Time**      | ~28 seconds for 100 epochs                | Hours per epoch (GPU-accelerated)       |
-| **Interpretability**   | High (coefficients are interpretable)      | Low (black-box neural network)          |
-| **Resource Needs**     | Minimal (CPU sufficient)                  | High (requires GPU for efficient use)   |
-| **Accuracy**           | Moderate (good for linear data)           | High (excels in capturing nuanced data) |
-| **Suitability**        | Simple, fast tasks with limited features   | Complex, semantic-rich text tasks       |
+| Feature                | Logistic Regression                        | GPT-2                                   | Gemini 1.5 API                         |
+|------------------------|--------------------------------------------|-----------------------------------------|-----------------------------------------|
+| **Complexity**         | Low                                       | High                                    | High                                    |
+| **Training Time**      | ~28 seconds for 100 epochs                | Hours per epoch (GPU-accelerated)       | Cloud-based, offloaded computation      |
+| **Interpretability**   | High (coefficients are interpretable)      | Low (black-box neural network)          | Moderate (API abstraction)             |
+| **Resource Needs**     | Minimal (CPU sufficient)                  | High (requires GPU for efficient use)   | Moderate (API-driven scaling)          |
+| **Accuracy**           | Moderate (good for linear data)           | High (excels in capturing nuanced data) | High (API-trained on extensive datasets) |
+| **Suitability**        | Simple, fast tasks with limited features   | Complex, semantic-rich text tasks       | Versatile, real-time NLP tasks          |  
 
 
 ## To run this project on your computer, you can follow these steps:
