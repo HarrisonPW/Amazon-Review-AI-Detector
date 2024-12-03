@@ -50,6 +50,10 @@
 3. **Training and Evaluation Metrics**
    - Accuracy, Precision, Recall, F1 Score across epochs.
   
+---
+
+## Models
+
 ### **[Logistic Regression Model](https://scikit-learn.org/dev/modules/generated/sklearn.linear_model.LogisticRegression.html)**
 
 **Overview**:  
