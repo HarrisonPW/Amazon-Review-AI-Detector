@@ -49,6 +49,71 @@
 
 3. **Training and Evaluation Metrics**
    - Accuracy, Precision, Recall, F1 Score across epochs.
+  
+### **[Logistic Regression Model](https://scikit-learn.org/dev/modules/generated/sklearn.linear_model.LogisticRegression.html)**
+
+**Overview**:  
+Logistic Regression is a classic statistical method used for binary classification tasks. In this project, it is employed to classify Amazon reviews as either **spam** (fake) or **non-spam** (real). Despite its simplicity, Logistic Regression is effective for tasks where feature relationships are linear or near-linear.
+
+**Key Features**:
+- **Simplicity and Interpretability**: The model provides straightforward results and coefficients that explain the relationship between features and output.
+- **Speed**: Training is computationally efficient, even on large datasets.
+- **Binary Classification**: Suitable for a balanced dataset like the one used here.
+
+**Training Details**:
+- **Dataset Split**: 80% training, 20% testing.
+- **Preprocessing**: 
+  - Text cleaning (lowercasing, stopword removal, punctuation removal).
+  - Features extracted using TF-IDF or Count Vectorization.
+- **Metrics Evaluated**:
+  - Accuracy, Precision, Recall, and F1 Score.
+  - ROC and Confusion Matrix.
+
+**Use Case**:  
+Logistic Regression works best when computational resources are limited, or a fast and interpretable model is preferred.
+
+---
+
+### **[GPT-2 Model](https://huggingface.co/openai-community/gpt2)**
+
+**Overview**:  
+GPT-2 (Generative Pre-trained Transformer 2) is a deep learning model developed by OpenAI for natural language understanding and generation. In this project, GPT-2 is fine-tuned for **text classification**, specifically detecting fake and real reviews by analyzing patterns, semantics, and linguistic nuances.
+
+**Key Features**:
+- **Contextual Understanding**: GPT-2 excels in understanding the context and generating human-like text.
+- **Fine-tuned for Specific Tasks**: By retraining on a labeled dataset, GPT-2 learns to distinguish spam reviews from genuine ones.
+- **Adaptability**: GPT-2 can be used for text classification, summarization, and other NLP tasks.
+
+**Training Details**:
+- **Dataset Split**: 80% training, 20% testing.
+- **Fine-tuning Parameters**:
+  - **Epochs**: Adjusted to optimize performance.
+  - **Batch Size**: Fine-tuned for resource optimization.
+  - **Learning Rate**: Optimized using Optuna.
+- **Performance Metrics**:
+  - Accuracy, Precision, Recall, and F1 Score tracked across epochs.
+  - Training Loss monitored for optimization.
+  
+**Advanced Features**:
+- Uses **transformer architecture**, which includes multi-head attention and positional encodings.
+- Capable of handling long-range dependencies in text, making it ideal for nuanced tasks like fake review detection.
+
+**Use Case**:  
+GPT-2 is suitable for tasks requiring a high degree of text understanding or tasks where leveraging semantic and contextual information significantly improves performance.
+
+---
+
+### Model Comparison
+
+| Feature                | Logistic Regression                        | GPT-2                                   |
+|------------------------|--------------------------------------------|-----------------------------------------|
+| **Complexity**         | Low                                       | High                                    |
+| **Training Time**      | ~28 seconds for 100 epochs                | Hours per epoch (GPU-accelerated)       |
+| **Interpretability**   | High (coefficients are interpretable)      | Low (black-box neural network)          |
+| **Resource Needs**     | Minimal (CPU sufficient)                  | High (requires GPU for efficient use)   |
+| **Accuracy**           | Moderate (good for linear data)           | High (excels in capturing nuanced data) |
+| **Suitability**        | Simple, fast tasks with limited features   | Complex, semantic-rich text tasks       |
+
 
 ## To run this project on your computer, you can follow these steps:
 
