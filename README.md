@@ -1,3 +1,55 @@
+
+
+## Open Source Packages
+
+### Libraries Used
+
+1. **[Scikit-learn](https://scikit-learn.org/stable/)**
+   - Description: Machine learning library for Python. Used for Logistic Regression and Multinomial Naive Bayes.
+   - Language: Python.
+
+2. **[Hugging Face Transformers](https://huggingface.co/docs/transformers/)**
+   - Description: Library for state-of-the-art natural language processing models like GPT-2.
+   - Language: Python.
+
+3. **[Optuna](https://optuna.org/)**
+   - Description: Framework for hyperparameter optimization.
+   - Language: Python.
+
+4. **[Pandas](https://pandas.pydata.org/)**
+   - Description: Data manipulation and analysis library.
+   - Language: Python.
+
+5. **[Matplotlib](https://matplotlib.org/)**
+   - Description: Library for creating static, animated, and interactive visualizations.
+   - Language: Python.
+
+---
+
+## Datasets
+
+### Amazon Fake/Real Review Dataset
+- **Source**: [Kaggle Dataset](https://www.kaggle.com/datasets/naveedhn/amazon-product-review-spam-and-non-spam/data)
+- **Categories**: Cell Phones and Accessories, Clothing, Home and Kitchen, Sports, and Toys.
+- **Size**: 100,000 data points (balanced dataset: 50% real and 50% fake reviews).
+- **Preprocessing**:
+  - Text cleaning (removing punctuations, stopwords, and extra spaces).
+  - Train-Test Split: 80% training, 20% testing.
+
+---
+
+## Performance Measurement Tools
+
+1. **Confusion Matrix**
+   - Evaluates model prediction performance.
+   - Highlights Type I and Type II errors.
+
+2. **ROC and Precision-Recall Curves**
+   - Visualization of performance metrics over different thresholds.
+
+3. **Training and Evaluation Metrics**
+   - Accuracy, Precision, Recall, F1 Score across epochs.
+
 ## To run this project on your computer, you can follow these steps:
 
 ### 1. Clone or Download the Project
