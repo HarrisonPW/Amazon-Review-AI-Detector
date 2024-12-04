@@ -139,6 +139,27 @@ GPT-2 is suitable for tasks requiring a high degree of text understanding or tas
 
 ---
 
+### **[Multinomial Naive Bayes](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html)**  
+
+**Overview**:  
+**MultinomialNB** is a variant of the Naive Bayes algorithm that works well with discrete features like word counts
+
+**Key Features**:  
+- Used in conjunction with the [**CountVectorizer**](https://scikit-learn.org/1.5/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html)
+
+**Training Details**:  
+- **Sample Size**: 100,000 samples in total. 80,000 samples in the training dataset. 20,000 samples in the testing dataset.
+- **Input**: TextReview (removing stopwords)
+- **Output**: Class (0 or 1)
+- **Dataset Split**: 80% training, 20% testing.  
+- **Parameters**:
+  - Max Features: 10,000
+   - n_gram range (1,5)
+   - alpha: 0.3
+ 
+**Use Case**:  
+Mostly used for classification tasks.
+
 ### **[Gemini 1.5 API Model](https://ai.google.dev/gemini-api/docs/model-tuning)**  
 
 **Overview**:  
