@@ -158,7 +158,7 @@ GPT-2 is suitable for tasks requiring a high degree of text understanding or tas
    - alpha: 0.3
  
 **Use Case**:  
-Mostly used for classification tasks.
+Mostly used for classification tasks, especially text classification tasks where data is represented as word counts.
 
 ### **[Gemini 1.5 API Model](https://ai.google.dev/gemini-api/docs/model-tuning)**  
 
