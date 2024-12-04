@@ -184,6 +184,11 @@ Gemini 1.5 API is ideal for applications requiring a balance between high accura
 | **Accuracy**           | Moderate (good for linear data)           | High (excels in capturing nuanced data) | High (API-trained on extensive datasets) |
 | **Suitability**        | Simple, fast tasks with limited features   | Complex, semantic-rich text tasks       | Versatile, real-time NLP tasks          |  
 
+---
+## Infrastructure
+<img width="715" alt="Screenshot 2024-12-03 at 7 22 35 PM" src="https://github.com/user-attachments/assets/d9368280-4204-4102-a8ef-ee4c204f7b9c">
+
+---
 
 ## To run this project on your computer, you can follow these steps:
 
