@@ -173,6 +173,14 @@ Gemini 1.5 API is ideal for applications requiring a balance between high accura
 
 ---
 
+### **[BERT+LSTM](https://arxiv.org/abs/2405.05136)**
+
+#### Model Breakdown
+- **[BERT](https://huggingface.co/docs/transformers/en/model_doc/bert)**
+- **[LSTM](https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html)**
+
+
+
 ### Model Comparison
 
 | Feature                | Logistic Regression                        | GPT-2                                   | Gemini 1.5 API                         |
