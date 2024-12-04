@@ -179,18 +179,42 @@ Gemini 1.5 API is ideal for applications requiring a balance between high accura
 - **[BERT](https://huggingface.co/docs/transformers/en/model_doc/bert)**
 - **[LSTM](https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html)**
 
+**Overview**:  
+BERT+LSTM is a combined model, which is generally considered as more powerful than any of the single model, providing more robustness to the base bert model with variable length of text input. It is also good at extract features given the text data are usually sequential in context.
+
+**Key Features**:
+- **Bidirectional**: Unlike unidirectional model which read from, for example, left to right, the bidirectional model can better extract the information embedded in the language data, providing better performance overall. 
+- **Input of variable length**: The combination with LSTM equipped the base bert with capability of handling variable length input. 
+- **Balance**: While maintaining a relatively smaller size, it is powerful in information extraction. 
+
+**Training Details**:
+- **Dataset Split**: 80% of 100,000 data points used for training, the rest 20% used for testing.
+- **Data Input**: reviewText, data cleaning techniques applied.
+- **Training Output**: Confidence score list of size 2 (real or fake).
+- **Use of Optuna**: Total trials of 5 to find the best parameters' combination.
+- **Epoch #**: 5
+- **Preprocessing**: 
+  - Data cleaning, including stop words removal and lowering letter cases.
+  - Added Sentimental Score to ensure sentimental consistency in reviewSummary and reviewText column. (Removed after Workshop Pre as focusing exclusively on reviewText.)
+- **Metrics Evaluated**:
+  - Accuracy, Precision, Recall, and F1 Score.
+  - Confusion Matrix
+
+**Use Case**:  
+Bert + LSTM is widely user for text classification tasks, such as fake online shopping review detection and sentimental analysis given a brief text.
+---
 
 
 ### Model Comparison
 
-| Feature                | Logistic Regression                        | GPT-2                                   | Gemini 1.5 API                         |
-|------------------------|--------------------------------------------|-----------------------------------------|-----------------------------------------|
-| **Complexity**         | Low                                       | High                                    | High                                    |
-| **Training Time**      | ~28 seconds for 100 epochs                | Hours per epoch (GPU-accelerated)       | Cloud-based, offloaded computation      |
-| **Interpretability**   | High (coefficients are interpretable)      | Low (black-box neural network)          | Moderate (API abstraction)             |
-| **Resource Needs**     | Minimal (CPU sufficient)                  | High (requires GPU for efficient use)   | Moderate (API-driven scaling)          |
-| **Accuracy**           | Moderate (good for linear data)           | High (excels in capturing nuanced data) | High (API-trained on extensive datasets) |
-| **Suitability**        | Simple, fast tasks with limited features   | Complex, semantic-rich text tasks       | Versatile, real-time NLP tasks          |  
+| Feature                | Logistic Regression                        | GPT-2                                   | Gemini 1.5 API                         | Bert + LSTM                            |
+|------------------------|--------------------------------------------|-----------------------------------------|-----------------------------------------|----------------------------------------|
+| **Complexity**         | Low                                       | High                                    | High                                    | High                                   |
+| **Training Time**      | ~28 seconds for 100 epochs                | Hours per epoch (GPU-accelerated)       | Cloud-based, offloaded computation      | ~35 min each trail, 3hrs54min in total |
+| **Interpretability**   | High (coefficients are interpretable)      | Low (black-box neural network)          | Moderate (API abstraction)             | Low given deep learning complex layers |
+| **Resource Needs**     | Minimal (CPU sufficient)                  | High (requires GPU for efficient use)   | Moderate (API-driven scaling)          | High, A100 used in above training      |
+| **Accuracy**           | Moderate (good for linear data)           | High (excels in capturing nuanced data) | High (API-trained on extensive datasets) | High, ~ 90 % in accuracy               |
+| **Suitability**        | Simple, fast tasks with limited features   | Complex, semantic-rich text tasks       | Versatile, real-time NLP tasks          | Balanced in performance and size      |
 
 ---
 ## Infrastructure
