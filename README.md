@@ -202,6 +202,7 @@ BERT+LSTM is a combined model, which is generally considered as more powerful th
 
 **Use Case**:  
 Bert + LSTM is widely user for text classification tasks, such as fake online shopping review detection and sentimental analysis given a brief text.
+
 ---
 
 
